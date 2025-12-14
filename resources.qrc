@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/new/prefix">
+        <file>k-studio.ddo.jp.png</file>
+    </qresource>
+</RCC>

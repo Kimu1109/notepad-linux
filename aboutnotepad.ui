@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AboutNotepad</class>
+ <widget class="QDialog" name="AboutNotepad">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>474</width>
+    <height>159</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>About notepad</string>
+  </property>
+  <widget class="QLabel" name="ImgLabel">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>131</width>
+     <height>141</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="pixmap">
+    <pixmap resource="resources.qrc">:/new/prefix/k-studio.ddo.jp.png</pixmap>
+   </property>
+  </widget>
+  <widget class="QLabel" name="BodyLabel">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>10</y>
+     <width>321</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Notepad by k-studio.ddo.jp&lt;br/&gt;
+Created by Kimu1109&lt;br/&gt;
+&lt;br/&gt;
+&lt;a href=&quot;https://github.com/Kimu1109&quot;&gt;GitHub&lt;/a&gt;&lt;br/&gt;
+&lt;a href=&quot;https://k-studio.ddo.jp&quot;&gt;HomePage&lt;/a&gt;&lt;br/&gt;
+&lt;br/&gt;
+(c) Copyright 2025 K-Studio.ddo.jp InterMediant</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+   </property>
+  </widget>
+ </widget>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>
