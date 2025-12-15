@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>About notepad</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/new/prefix/notepad-linux-icon.png</normaloff>:/new/prefix/notepad-linux-icon.png</iconset>
+  </property>
   <widget class="QLabel" name="ImgLabel">
    <property name="geometry">
     <rect>

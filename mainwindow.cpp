@@ -311,8 +311,10 @@ QMessageBox::StandardButton MainWindow::Save(){
         this->isUntitled = false;
         this->editor->document()->setModified(false);
         this->ChangeFileInfo(dia->title, dia->path, dia->encoding, dia->lineFeedCode);
+        delete dia;
         return QMessageBox::Save;
     }
+    delete dia;
     return QMessageBox::Cancel;
 }
 QMessageBox::StandardButton MainWindow::CheckUnsave(){
@@ -538,6 +540,9 @@ void MainWindow::MenuEditSearchWith(){
 void MainWindow::MenuEditFind(){
     if(this->findDialog == nullptr){
         this->findDialog = new FindDialog(this, this->editor);
+        connect(this->findDialog, &QObject::destroyed, this, [&](){
+            this->findDialog = nullptr;
+        });
         this->findDialog->show();
         this->findDialog->setAttribute(Qt::WA_DeleteOnClose);
     }
@@ -555,6 +560,9 @@ void MainWindow::MenuEditFindPrevious(){
 void MainWindow::MenuEditReplace(){
     if(this->replaceDialog == nullptr){
         this->replaceDialog = new ReplaceDialog(this, this->editor);
+        connect(this->replaceDialog, &QObject::destroyed, this, [&](){
+            this->replaceDialog = nullptr;
+        });
         this->replaceDialog->show();
         this->replaceDialog->setAttribute(Qt::WA_DeleteOnClose);
     }
@@ -647,6 +655,9 @@ void MainWindow::MenuHelpEnableBackup(){
 void MainWindow::MenuHelpAboutNotepad(){
     if(this->aboutNotepad == nullptr){
         this->aboutNotepad = new AboutNotepad(this);
+        connect(this->aboutNotepad, &QObject::destroyed, this, [&](){
+            this->aboutNotepad = nullptr;
+        });
         this->aboutNotepad->show();
         this->aboutNotepad->setAttribute(Qt::WA_DeleteOnClose);
     }
@@ -716,4 +727,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete this->editor;
+    delete this->StatusLnCol;
+    delete this->StatusNewLineCode;
+    delete this->StatusStringFormat;
+    delete this->StatusZoom;
+    delete this->printer;
 }

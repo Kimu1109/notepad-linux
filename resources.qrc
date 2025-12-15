@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/new/prefix">
         <file>k-studio.ddo.jp.png</file>
+        <file>notepad-linux-icon.png</file>
     </qresource>
 </RCC>
