@@ -4,12 +4,11 @@ project(notepad VERSION 1.0 LANGUAGES CXX)
 
 # ---- Qt auto tools ----
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTORCC ON)
 
 # ---- Qt ----
-find_package(Qt6 REQUIRED COMPONENTS Widgets PrintSupport)
+find_package(Qt6 REQUIRED COMPONENTS Widgets PrintSupport LinguistTools)
 
 # ---- Executable ----
 qt_add_executable(notepad WIN32 MACOSX_BUNDLE
@@ -21,19 +20,13 @@ qt_add_executable(notepad WIN32 MACOSX_BUNDLE
     replacedialog.cpp replacedialog.h replacedialog.ui
     saveformatdialog.cpp saveformatdialog.h saveformatdialog.ui
     zoomableplaintextedit.cpp zoomableplaintextedit.h
+    savedialognotnative.h resources.qrc
+    welcomedialog.h welcomedialog.cpp welcomedialog.ui magic_enum.hpp
 )
 
 target_link_libraries(notepad PRIVATE
     Qt6::Widgets
     Qt6::PrintSupport
-)
-
-# ---- Resources ----
-qt_add_resources(notepad resources
-    PREFIX "/"
-    FILES
-        k-studio.ddo.jp.png
-        notepad-linux-icon.png
 )
 
 # ---- ICU ----
@@ -42,6 +35,11 @@ target_link_libraries(notepad PRIVATE
     ICU::i18n
     ICU::uc
     ICU::data
+)
+
+qt_add_translations(notepad
+    TS_FILES
+        translations/app_ja.ts
 )
 
 # ---- Install ----

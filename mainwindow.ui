@@ -127,12 +127,21 @@
      <addaction name="actionDateTimeShort"/>
      <addaction name="actionDateTimeLong"/>
     </widget>
+    <widget class="QMenu" name="menuLanguage">
+     <property name="title">
+      <string>Language</string>
+     </property>
+     <addaction name="actionEnglish"/>
+     <addaction name="actionJapanese"/>
+    </widget>
     <addaction name="actionView_Help"/>
     <addaction name="actionSeed_Feedback"/>
     <addaction name="separator"/>
     <addaction name="menuSearch_Engine"/>
     <addaction name="menuDate_Time_Format"/>
+    <addaction name="menuLanguage"/>
     <addaction name="actionIsEnable_Backup"/>
+    <addaction name="actionEnable_Native_Save_Dialog"/>
     <addaction name="separator"/>
     <addaction name="actionAbout_Notepad"/>
    </widget>
@@ -480,6 +489,30 @@
    </property>
    <property name="text">
     <string>Enable Backup</string>
+   </property>
+  </action>
+  <action name="actionEnable_Native_Save_Dialog">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable Native Save Dialog</string>
+   </property>
+  </action>
+  <action name="actionEnglish">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>English</string>
+   </property>
+  </action>
+  <action name="actionJapanese">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>日本語</string>
    </property>
   </action>
  </widget>

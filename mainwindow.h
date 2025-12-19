@@ -4,11 +4,11 @@
 #include <QMainWindow>
 #include <QLabel>
 #include <QComboBox>
-#include <zoomableplaintextedit.h>
-#include <finddialog.h>
-#include <replacedialog.h>
-#include <aboutnotepad.h>
-#include <saveformatdialog.h>
+#include "zoomableplaintextedit.h"
+#include "finddialog.h"
+#include "replacedialog.h"
+#include "aboutnotepad.h"
+#include "saveformatdialog.h"
 #include <QMessageBox>
 #include <QPrintPreviewDialog>
 #include <QPrinter>
@@ -31,10 +31,6 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-protected:
-    void closeEvent(QCloseEvent *event) override;
-
-private:
     enum SearchEngine {
         Google,
         Bing,
@@ -47,8 +43,17 @@ private:
         Seznam,
         Naver
     };
+    enum LanguageList {
+        English,
+        Japanese
+    };
 
-    const QString DEFAULT_TITLE = "Untitled";
+    static QString GetLocaleStr();
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
+
+private:
 
     Ui::MainWindow *ui;
     ZoomablePlainTextEdit* editor;
@@ -131,6 +136,7 @@ private:
     void MenuHelpViewHelp();
     void MenuHelpSendFeedback();
     void MenuHelpEnableBackup();
+    void MenuHelpEnableNativeSaveDialog();
     void MenuHelpAboutNotepad();
     void MenuHelpSearchEngineOpening();
     void MenuHelpSearchEngineGoogle();
@@ -146,5 +152,8 @@ private:
     void MenuHelpDateTimeFormatLong();
     void MenuHelpDateTimeFormatShort();
     void MenuHelpDateTimeFormatOpening();
+    void MenuHelpLanguageEnglish();
+    void MenuHelpLanguageJapanese();
+    void MenuHelpLanguageOpening();
 };
 #endif // MAINWINDOW_H

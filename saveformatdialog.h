@@ -57,6 +57,8 @@ public:
     static QByteArray normalizeLineEndingToLF(const QByteArray& data);
     static TextDecodeResult DecodeBytes(const QByteArray& data);
     static const char* codecToICUName(Codecs c);
+    static QList<std::tuple<SaveFormatDialog::Codecs, QString>> getCodecs();
+    static QList<std::tuple<SaveFormatDialog::LineFeedCode, QString>> getLineFeedCodes();
 
 private:
     Ui::SaveFormatDialog *ui;

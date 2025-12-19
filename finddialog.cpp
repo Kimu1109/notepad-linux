@@ -63,7 +63,7 @@ void FindDialog::Find(bool isPrevious){
                 this->editor->ensureCursorVisible();
             } else {
                 this->editor->setTextCursor(originalCursor);
-                QMessageBox::information(this, "notepad", "Cannot find '" + findWhat + "'", QMessageBox::Ok);
+                QMessageBox::information(this, tr("notepad"), tr("Cannot find '%1'").arg(findWhat), QMessageBox::Ok);
             }
         }
     }

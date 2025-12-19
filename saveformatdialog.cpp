@@ -6,7 +6,7 @@
 #include <QDir>
 #include <QPlainTextEdit>
 #include <QStringConverter>
-#include <character_controller.h>
+#include "character_controller.h"
 #include <QMessageBox>
 #include <unicode/ucsdet.h>
 #include <unicode/ucnv.h>
@@ -26,17 +26,12 @@ SaveFormatDialog::SaveFormatDialog(
 {
     ui->setupUi(this);
 
-    ui->EncodingCombo->addItem("UTF-8", Codecs::UTF8);
-    ui->EncodingCombo->addItem("UTF-8 BOM", Codecs::UTF8_BOM);
-    ui->EncodingCombo->addItem("UTF-16 LE", Codecs::UTF16LE);
-    ui->EncodingCombo->addItem("UTF-16 BE", Codecs::UTF16BE);
-    ui->EncodingCombo->addItem("Shift-JIS", Codecs::ShiftJIS);
-    ui->EncodingCombo->addItem("EUC JP", Codecs::EUCJP);
-    ui->EncodingCombo->addItem("ISO 2022 JP", Codecs::ISO2022JP);
-
-    ui->LineCodeCombo->addItem("Lf (Linux/macOS)", LineFeedCode::LF);
-    ui->LineCodeCombo->addItem("CrLf (Windows)", LineFeedCode::CRLF);
-    ui->LineCodeCombo->addItem("Cr (Old MacOS)", LineFeedCode::CR);
+    for(const auto& [num, str] : this->getCodecs()){
+        ui->EncodingCombo->addItem(str, num);
+    }
+    for(const auto& [num, str] : this->getLineFeedCodes()){
+        ui->LineCodeCombo->addItem(str, num);
+    }
 
     this->encoding = encoding;
     this->lineFeedCode = lineCode;
@@ -57,7 +52,7 @@ SaveFormatDialog::SaveFormatDialog(
     this->editor = editor;
 
     connect(ui->SelectButton, &QPushButton::clicked, this, [this](){
-        QString filePath = QFileDialog::getSaveFileName(this, "Save As", this->path.isEmpty() ? QDir::homePath() : QDir(this->path).filePath(this->title), "TextDocuments (*.txt);;All Files (*)");
+        QString filePath = QFileDialog::getSaveFileName(this, tr("Save As"), this->path.isEmpty() ? QDir::homePath() : QDir(this->path).filePath(this->title), tr("TextDocuments (*.txt);;All Files (*)"));
         if(filePath != ""){
             ui->FilePathLineEdit->setText(filePath);
         }
@@ -74,7 +69,7 @@ SaveFormatDialog::SaveFormatDialog(
         QDir dir(fileInfo.path());
 
         if(filePath == "" || !dir.exists()){
-            filePath = QFileDialog::getSaveFileName(this, "Save As", this->path.isEmpty() ? QDir::homePath() : QDir(this->path).filePath(this->title), "TextDocuments (*.txt);;All Files (*)");
+            filePath = QFileDialog::getSaveFileName(this, tr("Save As"), this->path.isEmpty() ? QDir::homePath() : QDir(this->path).filePath(this->title), tr("TextDocuments (*.txt);;All Files (*)"));
             if(filePath == ""){
                 return;
             }
@@ -104,6 +99,7 @@ bool SaveFormatDialog::WriteTo(QString filePath, Codecs encoding, LineFeedCode l
         QString plainText = editor->toPlainText();
 
         switch(lineCode){
+        case LineFeedCode::Unknown:
         case LineFeedCode::LF:
             plainText.replace("\r\n", "\n"); //win -> unix
             plainText.replace("\r", "\n"); //old mac os -> unix
@@ -154,7 +150,7 @@ bool SaveFormatDialog::WriteTo(QString filePath, Codecs encoding, LineFeedCode l
         file.close();
         return true;
     } else {
-        QMessageBox(QMessageBox::Icon::Critical, "Saving Error", "Failed to open the file.").exec();
+        QMessageBox(QMessageBox::Icon::Critical, tr("Saving Error"), tr("Failed to open the file.")).exec();
         return false;
     }
 }
@@ -309,6 +305,24 @@ const char* SaveFormatDialog::codecToICUName(Codecs c)
     case Codecs::ISO2022JP:  return "ISO-2022-JP";
     default:                 return nullptr;
     }
+}
+QList<std::tuple<SaveFormatDialog::Codecs, QString>> SaveFormatDialog::getCodecs(){
+    return {
+        std::forward_as_tuple(Codecs::UTF8, "UTF-8"),
+        std::forward_as_tuple(Codecs::UTF8_BOM, "UTF-8 BOM"),
+        std::forward_as_tuple(Codecs::UTF16LE, "UTF-16 LE"),
+        std::forward_as_tuple(Codecs::UTF16BE, "UTF-16 BE"),
+        std::forward_as_tuple(Codecs::ShiftJIS, "Shift-JIS"),
+        std::forward_as_tuple(Codecs::EUCJP, "EUC JP"),
+        std::forward_as_tuple(Codecs::ISO2022JP, "ISO 2022 JP")
+    };
+}
+QList<std::tuple<SaveFormatDialog::LineFeedCode, QString>> SaveFormatDialog::getLineFeedCodes(){
+    return {
+        std::forward_as_tuple(LineFeedCode::LF, "Lf (Linux/macOS)"),
+        std::forward_as_tuple(LineFeedCode::CRLF, "CrLf (Windows)"),
+        std::forward_as_tuple(LineFeedCode::CR, "Cr (Old MacOS)")
+    };
 }
 
 SaveFormatDialog::~SaveFormatDialog()

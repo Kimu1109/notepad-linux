@@ -23,39 +23,7 @@
 #include "finddialog.h"
 #include "aboutnotepad.h"
 #include "saveformatdialog.h"
-
-QString saveFileWithEncoding(QWidget *parent, QString &selectedEncoding)
-{
-    QFileDialog dialog(parent, "名前を付けて保存");
-    dialog.setAcceptMode(QFileDialog::AcceptSave);
-    dialog.setFileMode(QFileDialog::AnyFile);
-
-    // ネイティブダイアログ禁止（これが重要）
-    dialog.setOption(QFileDialog::DontUseNativeDialog, true);
-
-    // ---------- エンコード選択 UI ----------
-    QComboBox *combo = new QComboBox(&dialog);
-    combo->addItems({ "UTF-8", "Shift-JIS", "EUC-JP", "UTF-16 LE", "UTF-16 BE" });
-    combo->setCurrentText("UTF-8");
-
-    QLabel *label = new QLabel("文字コード:", &dialog);
-
-    // ダイアログ内部レイアウトを取得
-    QGridLayout *layout = qobject_cast<QGridLayout*>(dialog.layout());
-    if (layout) {
-        // filename の下あたりに追加する
-        layout->addWidget(label, layout->rowCount(), 0);
-        layout->addWidget(combo, layout->rowCount() - 1, 1);
-    }
-
-    // ---------- 表示 ----------
-    if (dialog.exec() == QDialog::Accepted) {
-        selectedEncoding = combo->currentText();
-        return dialog.selectedFiles().first();
-    }
-
-    return "";
-}
+#include "savedialognotnative.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -65,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //status bar
     statusBar()->addPermanentWidget(this->CreateSeparator());
-    this->StatusLnCol = new QLabel("Ln 1, Col 1");
+    this->StatusLnCol = new QLabel(tr("Ln 1, Col 1"));
     statusBar()->addPermanentWidget(this->StatusLnCol);
 
     statusBar()->addPermanentWidget(this->CreateSeparator());
@@ -86,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
             backupData backuped = this->loadBackup();
             if(!backuped.body.isEmpty()){
                 QMessageBox msgBox;
-                msgBox.setText("Do you want to restore your unsaved " + this->settings.value("editor/back-up-title").toString() + "?");
+                msgBox.setText(tr("Do you want to restore your unsaved %1?").arg(backuped.title));
                 msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
                 msgBox.setDefaultButton(QMessageBox::Yes);
                 if(msgBox.exec() == QMessageBox::Yes){
@@ -100,7 +68,7 @@ MainWindow::MainWindow(QWidget *parent)
     //init
     this->path = "";
     this->codec_name = "Something went wrong!";
-    this->ChangeTitle(this->DEFAULT_TITLE);
+    this->ChangeTitle(tr("Untitled"));
     this->ChangeEncode(SaveFormatDialog::UTF8);
     this->ChangeLineFeedCode(SaveFormatDialog::LineFeedCode::LF);
     this->printer = new QPrinter(QPrinter::HighResolution);
@@ -157,6 +125,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionView_Help, &QAction::triggered, this, &MainWindow::MenuHelpViewHelp);
     connect(ui->actionSeed_Feedback, &QAction::triggered, this, &MainWindow::MenuHelpSendFeedback);
     connect(ui->actionIsEnable_Backup, &QAction::triggered, this, &MainWindow::MenuHelpEnableBackup);
+    connect(ui->actionEnable_Native_Save_Dialog, &QAction::triggered, this, &MainWindow::MenuHelpEnableNativeSaveDialog);
     connect(ui->actionAbout_Notepad, &QAction::triggered, this, &MainWindow::MenuHelpAboutNotepad);
     connect(ui->menuSearch_Engine, &QMenu::aboutToShow, this, &MainWindow::MenuHelpSearchEngineOpening);
     connect(ui->actionGoogle, &QAction::triggered, this, &MainWindow::MenuHelpSearchEngineGoogle);
@@ -172,6 +141,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionDateTimeLong, &QAction::triggered, this, &MainWindow::MenuHelpDateTimeFormatLong);
     connect(ui->actionDateTimeShort, &QAction::triggered, this, &MainWindow::MenuHelpDateTimeFormatShort);
     connect(ui->menuDate_Time_Format, &QMenu::aboutToShow, this, &MainWindow::MenuHelpDateTimeFormatOpening);
+    connect(ui->actionEnglish, &QAction::triggered, this, &MainWindow::MenuHelpLanguageEnglish);
+    connect(ui->actionJapanese, &QAction::triggered, this, &MainWindow::MenuHelpLanguageJapanese);
+    connect(ui->menuLanguage, &QMenu::aboutToShow, this, &MainWindow::MenuHelpLanguageOpening);
 }
 
 // SYSTEMS ===================================
@@ -247,7 +219,7 @@ void MainWindow::UpdateTitle(){
     ){
         windowTitle += "*";
     }
-    windowTitle += title + " - notepad";
+    windowTitle += tr("%1 - notepad").arg(title);
     this->setWindowTitle(windowTitle);
 }
 void MainWindow::ChangeEncode(SaveFormatDialog::Codecs codec){
@@ -290,13 +262,13 @@ void MainWindow::ChangeLineFeedCode(SaveFormatDialog::LineFeedCode lineCode){
         l = "Lf (Linux/macOS)";
         break;
     case SaveFormatDialog::LineFeedCode::CR:
-        l = "Cr (Old MacOS)";
+        l = tr("Cr (Old MacOS)");
         break;
     case SaveFormatDialog::LineFeedCode::CRLF:
         l = "CrLf (Windows)";
         break;
     case SaveFormatDialog::LineFeedCode::Unknown:
-        l = "Unknown";
+        l = tr("Unknown");
         break;
     case SaveFormatDialog::LineFeedCode::Mixed:
         l = "Something went wrong!";
@@ -306,45 +278,58 @@ void MainWindow::ChangeLineFeedCode(SaveFormatDialog::LineFeedCode lineCode){
     this->StatusNewLineCode->setText(l);
 }
 QMessageBox::StandardButton MainWindow::Save(){
-    SaveFormatDialog* dia = new SaveFormatDialog(this, this->editor, this->codec, this->lineCode, this->path, this->title);
-    if(dia->exec() == QDialog::Accepted){
-        this->isUntitled = false;
-        this->editor->document()->setModified(false);
-        this->ChangeFileInfo(dia->title, dia->path, dia->encoding, dia->lineFeedCode);
+    if(this->settings.value("dialog/save-dialog-is-native", true).toBool()){
+        SaveFormatDialog* dia = new SaveFormatDialog(this, this->editor, this->codec, this->lineCode, this->path, this->title);
+        if(dia->exec() == QDialog::Accepted){
+            this->isUntitled = false;
+            this->editor->document()->setModified(false);
+            this->ChangeFileInfo(dia->title, dia->path, dia->encoding, dia->lineFeedCode);
+            delete dia;
+            return QMessageBox::Save;
+        }
         delete dia;
-        return QMessageBox::Save;
+    }else{
+        IOSaveDialog result = saveDialogNotNative(this, this->editor, IOSaveDialog{this->path, this->title, this->codec, this->lineCode});
+        if(result.successed){
+            this->isUntitled = false;
+            this->editor->document()->setModified(false);
+            this->ChangeFileInfo(result.title, result.path, result.codec, result.lineFeedCode);
+            return QMessageBox::Save;
+        }
     }
-    delete dia;
+
     return QMessageBox::Cancel;
 }
 QMessageBox::StandardButton MainWindow::CheckUnsave(){
-
-    if(this->isUntitled && !this->isEmptyEditorText){
+    if(
+        (this->isUntitled && !this->isEmptyEditorText) ||
+        (!this->isUntitled && this->editor->document()->isModified())
+    ){
         QMessageBox msgBox;
-        msgBox.setText("Do you want to save changes to " + this->title + "?");
+        msgBox.setText(tr("Do you want to save changes to %1 ?").arg(this->title));
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Save);
         switch (msgBox.exec()) {
         case QMessageBox::Save:
         {
-            return this->Save();
+            if(this->isUntitled){
+                return this->Save();
+            }else{
+                if(SaveFormatDialog::WriteTo(QDir(this->path).filePath(this->title), this->codec, this->lineCode, this->editor)){
+                    this->editor->document()->setModified(false);
+                    this->UpdateTitle();
+                }
+            }
         }
         case QMessageBox::Discard:
             if(this->settings.value("editor/back-up", true).toBool()){
-                this->saveBackup(this->editor->toPlainText(), "Untitled", "", SaveFormatDialog::Codecs::UTF8, SaveFormatDialog::LineFeedCode::LF);
+                this->saveBackup(this->editor->toPlainText(), this->title, this->path, this->codec, this->lineCode);
             }
             return QMessageBox::Discard;
         case QMessageBox::Cancel:
             return QMessageBox::Cancel;
         }
         return QMessageBox::Cancel;
-    }
-
-    if(!this->isUntitled && this->editor->document()->isModified()){
-        if(SaveFormatDialog::WriteTo(QDir(this->path).filePath(this->title), this->codec, this->lineCode, this->editor)){
-            this->editor->document()->setModified(false);
-            this->UpdateTitle();
-        }
     }
 
     return QMessageBox::Discard;
@@ -364,7 +349,7 @@ void MainWindow::EditorLnCol(){
     int line = cursor.blockNumber() + 1;
     int column = cursor.columnNumber() + 1;
 
-    this->StatusLnCol->setText(QString("Ln %1, Col %2").arg(line).arg(column));
+    this->StatusLnCol->setText(tr("Ln %1, Col %2").arg(line).arg(column));
 }
 void MainWindow::EditorTextChanged(){
     if(!this->isUntitled){
@@ -389,7 +374,7 @@ void MainWindow::MenuFileNew(){
         this->isUntitled = true;
         this->editor->clear();
         this->ChangeFileInfo(
-            this->DEFAULT_TITLE,
+            tr("Untitled"),
             "", //path
             SaveFormatDialog::Codecs::UTF8,
             SaveFormatDialog::LineFeedCode::LF
@@ -403,9 +388,9 @@ void MainWindow::MenuFileOpen(){
     if(this->CheckUnsave() == QMessageBox::Discard){
         QString fileName = QFileDialog::getOpenFileName(
             this,
-            "Open",
+            tr("Open"),
             this->path.isEmpty() ? QDir::homePath() : this->path,
-            "Text Documents(*.txt);;All Files(*.*)"
+            tr("Text Documents(*.txt);;All Files(*.*)")
             );
         if (!fileName.isEmpty()) {
             QFile file(fileName);
@@ -422,7 +407,7 @@ void MainWindow::MenuFileOpen(){
                 this->codec_name = result.encodingName;
                 this->ChangeFileInfo(fileInfo.fileName(), fileInfo.absolutePath(), result.encoding, result.lineEnding);
             }else{
-                QMessageBox(QMessageBox::Icon::Critical, "Opening Error", "Failed to open the file.").exec();
+                QMessageBox(QMessageBox::Icon::Critical, tr("Opening Error"), tr("Failed to open the file.")).exec();
             }
         }
     }
@@ -442,15 +427,15 @@ void MainWindow::MenuFileSaveAs(){
 }
 void MainWindow::MenuFilePageSetup(){
     QPageSetupDialog dialog(this->printer, this);
-    dialog.setWindowTitle("Page Setup");
+    dialog.setWindowTitle(tr("Page Setup"));
 
     dialog.exec();
 }
 void MainWindow::MenuFilePrint(){
-    this->printer->setOutputFileName(QDir(QDir::homePath()).filePath(this->isUntitled ? "Untitled.pdf" : (QFileInfo(this->title).completeBaseName() + ".pdf")));
+    this->printer->setOutputFileName(QDir(QDir::homePath()).filePath(this->isUntitled ? tr("Untitled.pdf") : (QFileInfo(this->title).completeBaseName() + ".pdf")));
 
     QPrintPreviewDialog preview(this->printer, this);
-    preview.setWindowTitle("Print");
+    preview.setWindowTitle(tr("Print"));
 
     connect(&preview, &QPrintPreviewDialog::paintRequested,
             this, [this](QPrinter *printer){
@@ -569,7 +554,7 @@ void MainWindow::MenuEditReplace(){
 }
 void MainWindow::MenuEditGoTo(){
     QTextCursor cursor = editor->textCursor();
-    int lineNumber = QInputDialog::getInt(this, "Go To Line", "Line number:", cursor.blockNumber() + 1, 1, editor->blockCount());
+    int lineNumber = QInputDialog::getInt(this, tr("Go To Line"), tr("Line number:"), cursor.blockNumber() + 1, 1, editor->blockCount());
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, lineNumber);
     editor->setTextCursor(cursor);
@@ -641,6 +626,7 @@ void MainWindow::MenuViewStatusBar(){
 //MENU HELP ==========================================
 void MainWindow::MenuHelpOpening(){
     ui->actionIsEnable_Backup->setChecked(this->settings.value("editor/back-up", true).toBool());
+    ui->actionEnable_Native_Save_Dialog->setChecked(this->settings.value("dialog/save-dialog-is-native", true).toBool());
 }
 void MainWindow::MenuHelpViewHelp(){
     QDesktopServices::openUrl(QUrl("https://www.bing.com/search?q=get+help+with+notepad+in+windows&filters=guid:%224466414-en-dia%22%20lang:%22en%22&form=T00032&ocid=HelpPane-BingIA"));
@@ -651,6 +637,9 @@ void MainWindow::MenuHelpSendFeedback(){
 }
 void MainWindow::MenuHelpEnableBackup(){
     this->settings.setValue("editor/back-up", ui->actionIsEnable_Backup->isChecked());
+}
+void MainWindow::MenuHelpEnableNativeSaveDialog(){
+    this->settings.setValue("dialog/save-dialog-is-native", ui->actionEnable_Native_Save_Dialog->isChecked());
 }
 void MainWindow::MenuHelpAboutNotepad(){
     if(this->aboutNotepad == nullptr){
@@ -714,6 +703,31 @@ void MainWindow::MenuHelpDateTimeFormatLong(){
 }
 void MainWindow::MenuHelpDateTimeFormatShort(){
     this->settings.setValue("editor/is-long-date", false);
+}
+void MainWindow::MenuHelpLanguageOpening(){
+    auto language = (LanguageList)this->settings.value("application/language", LanguageList::English).toInt();
+    ui->actionEnglish->setChecked(language == LanguageList::English);
+    ui->actionJapanese->setChecked(language == LanguageList::Japanese);
+}
+void MainWindow::MenuHelpLanguageEnglish(){
+    if(this->settings.value("application/language", LanguageList::English).toInt() != (int)LanguageList::English){
+        QMessageBox(QMessageBox::Icon::Information, tr("notepad"), tr("Changing the language requires restarting the app")).exec();
+    }
+    this->settings.setValue("application/language", LanguageList::English);
+}
+void MainWindow::MenuHelpLanguageJapanese(){
+    if(this->settings.value("application/language", LanguageList::English).toInt() != (int)LanguageList::Japanese){
+        QMessageBox(QMessageBox::Icon::Information, tr("notepad"), tr("Changing the language requires restarting the app")).exec();
+    }
+    this->settings.setValue("application/language", LanguageList::Japanese);
+}
+QString MainWindow::GetLocaleStr(){
+    switch((MainWindow::LanguageList)QSettings().value("application/language", MainWindow::LanguageList::English).toInt()){
+    case MainWindow::LanguageList::English:
+        return "en";
+    case MainWindow::LanguageList::Japanese:
+        return "ja";
+    }
 }
 void MainWindow::closeEvent(QCloseEvent *event)
 {

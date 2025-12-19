@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Notepad
+Comment=Simple Notepad For Linux
+Exec=notepad
+Icon=notepad
+Terminal=false
+Categories=Utility;TextEditor;
