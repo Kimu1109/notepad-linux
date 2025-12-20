@@ -17,7 +17,6 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     QSettings setting;
 
-    setting.setValue("application/first-execute", true);
     if(setting.value("application/first-execute", true).toBool()){
         WelcomeDialog welcome(&a, &appTranslator);
         if(welcome.exec() != QDialog::Accepted){
