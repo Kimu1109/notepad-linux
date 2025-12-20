@@ -5,4 +5,4 @@ Comment=Simple Notepad For Linux
 Exec=notepad
 Icon=notepad
 Terminal=false
-Categories=Utility;TextEditor;
+Categories=Office;Development;
