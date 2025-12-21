@@ -4,7 +4,7 @@ This branch is for building a .deb file.
 
 ## How To Build Notepad .deb File.
 
-**Requirement Packages** 
+#### Requirement Packages
 
 - build-essential
 - cmake
@@ -29,7 +29,7 @@ apt install -y \
 
 
 
-**Way To Build **
+#### Way To Build
 
 Run This Command :
 
