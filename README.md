@@ -3,7 +3,7 @@
 this application is like MS notepad.  
 Most of the functions have been reproduced, so you can expect light and smooth movement.
 
-![a](/home/shono/ドキュメント/notepad-debug/notepad-linux-icon.png)
+![a](notepad-linux-icon.png)
 
 ## Install
 
