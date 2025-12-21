@@ -1,9 +1,9 @@
 # notepad-linux
 
-this application is like MS notepad.  
+This application is like MS notepad.  
 Most of the functions have been reproduced, so you can expect light and smooth movement.
 
-![a](notepad-linux-icon.png)
+![256x256 icon](icon/256.png)
 
 ## Install
 
