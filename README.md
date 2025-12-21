@@ -29,7 +29,7 @@ apt install -y \
 
 
 
-**Way To Build ** 
+**Way To Build **
 
 Run This Command :
 
