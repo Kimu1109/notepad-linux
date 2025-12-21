@@ -7,9 +7,12 @@ Most of the functions have been reproduced, so you can expect light and smooth m
 
 ## Install
 
+The distributed .deb file is supporting only x86_64.  
 
-This application is supporting only x86_64.  
-Download release version .deb from [here](https://github.com/Kimu1109/notepad-linux/releases/download/release-stable/notepad-1.0.0-Linux.deb).  
+> If you need a .deb file not for x86_64, you will need to build a .deb file by your self.
+> To build them : [Release Branch](https://github.com/Kimu1109/notepad-linux/tree/release)
+
+Download release version .deb from [here(x86_64 only)](https://github.com/Kimu1109/notepad-linux/releases/download/release-stable/notepad-1.0.0-Linux.deb).  
 And run this command:
 
 ```
