@@ -6,3 +6,4 @@ Exec=notepad
 Icon=notepad
 Terminal=false
 Categories=Office;Development;
+StartupWMClass=notepad-linux
